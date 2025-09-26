@@ -51,7 +51,24 @@ const ROLES: Record<RoleKey, RoleMeta> = {
   },
 };
 
-const PAL = ["#2563eb", "#16a34a", "#ea580c", "#9333ea"]; // barvy pro 1–4 kandidáty
+const PAL = [
+  "#2563eb",
+  "#16a34a",
+  "#ea580c",
+  "#9333ea", // původní 4 barvy
+  "#dc2626",
+  "#0891b2",
+  "#ca8a04",
+  "#be185d", // další 4 barvy
+  "#7c3aed",
+  "#059669",
+  "#c2410c",
+  "#4338ca", // další 4 barvy
+  "#b91c1c",
+  "#0f766e",
+  "#a16207",
+  "#9d174d", // další 4 barvy
+]; // barvy pro více kandidátů
 
 interface Candidate {
   id: string;
@@ -123,13 +140,16 @@ const S: Record<string, React.CSSProperties> = {
   },
   h1: { fontSize: 24, margin: 0 },
   sub: { opacity: 0.7, fontSize: 14 },
-  row: { display: "flex", gap: 12, flexWrap: "wrap" },
+  row: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+    gap: 12,
+    alignItems: "start",
+  },
   card: {
     border: "1px solid #e5e7eb",
     borderRadius: 12,
     padding: 16,
-    flex: 1,
-    minWidth: 280,
     backgroundColor: "#ffffff",
     color: "#000000",
   },
@@ -199,8 +219,9 @@ export default function BelbinRadarCZ() {
   const radarData = useMemo(() => toRadarData(candidates), [candidates]);
   const maxDomain = useMemo(() => computeMax(candidates), [candidates]);
 
+  const maxCandidates = 16; // configurable maximum
   const addCandidate = () =>
-    candidates.length < 4 &&
+    candidates.length < maxCandidates &&
     setCandidates((p) => [...p, DEFAULT_CANDIDATE(p.length)]);
   const removeCandidate = (id: string) =>
     setCandidates((p) => p.filter((c) => c.id !== id));
@@ -234,7 +255,7 @@ export default function BelbinRadarCZ() {
         <div>
           <h1 style={S.h1}>Belbin – Týmové role (CZ)</h1>
           <div style={S.sub}>
-            Zadejte výsledky pro 1–4 kandidáty a porovnejte je v radar grafu.
+            Zadejte výsledky pro kandidáty a porovnejte je v radar grafu.
             Zkratky: {ROLE_ORDER.join(", ")}. Doporučený rozsah 0–10 (max 20).
           </div>
           <div style={S.tabs}>
@@ -350,19 +371,22 @@ export default function BelbinRadarCZ() {
           <div
             style={{
               ...S.card,
-              maxWidth: 240,
-              alignSelf: "flex-start",
               textAlign: "center",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
             }}
           >
-            <div style={{ fontWeight: 600, marginBottom: 8 }}>Kandidáti</div>
+            <div style={{ fontWeight: 600, marginBottom: 8 }}>
+              Kandidáti ({candidates.length}/{maxCandidates})
+            </div>
             <div style={{ fontSize: 13, opacity: 0.7, marginBottom: 12 }}>
-              Max. 4 osoby, každá má svou barvu.
+              Každý kandidát má svou barvu v grafu.
             </div>
             <button
               style={S.btnPrimary}
               onClick={addCandidate}
-              disabled={candidates.length >= 4}
+              disabled={candidates.length >= maxCandidates}
             >
               Přidat kandidáta
             </button>
@@ -404,7 +428,14 @@ export default function BelbinRadarCZ() {
       )}
 
       {tab === "legend" && (
-        <div style={S.row}>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+            gap: 12,
+            alignItems: "start",
+          }}
+        >
           {ROLE_ORDER.map((rk) => (
             <div key={rk} style={S.card}>
               <div
@@ -421,7 +452,9 @@ export default function BelbinRadarCZ() {
               <div style={S.sub}>{ROLES[rk].desc}</div>
             </div>
           ))}
-          <div style={{ ...S.card, background: "#f8fafc" }}>
+          <div
+            style={{ ...S.card, background: "#f8fafc", gridColumn: "1 / -1" }}
+          >
             <div style={{ fontSize: 13 }}>
               Pozn.: Názvy odpovídají běžným českým překladům Belbinových rolí:
               Inovátor (Plant), Formovač (Shaper), Vyhledávač zdrojů (Resource
